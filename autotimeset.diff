@@ -1,0 +1,48 @@
+diff --git a/package/luci-app-autotimeset/luasrc/controller/autotimeset.lua b/package/luci-app-autotimesetluasrc/controller/autotimeset.lua
+index da33581..b3b7090 100644
+--- a/package/luci-app-autotimeset/luasrc/controller/autotimeset.lua
++++ b/package/luci-app-autotimesetluasrc/controller/autotimeset.lua
+@@ -5,7 +5,7 @@ function index()
+ 	if not nixio.fs.access("/etc/config/autotimeset") then
+ 		return
+ 	end
+-        entry({"admin", "control"}, firstchild(), "Control", 44).dependent = false
++        entry({"admin", "control"}, firstchild(), _("Control"), 44).dependent = false
+         local e = entry({"admin", "control", "autotimeset"}, alias("admin", "control", "autotimeset", "base"), _("Scheduled Setting"), 20)
+ 	e.dependent = false
+ 	e.acl_depends = { "luci-app-autotimeset" }
+diff --git a/package/luci-app-autotimeset/po/zh-cn/autotimeset.po b/package/luci-app-autotimesetpo/zh-cn/autotimeset.po
+index 9b322f0..2fbe646 100644
+--- a/package/luci-app-autotimeset/po/zh-cn/autotimeset.po
++++ b/package/luci-app-autotimesetpo/zh-cn/autotimeset.po
+@@ -1,3 +1,5 @@
++msgid "Control"
++msgstr "任务"
+ 
+ msgid "<b>The original [Timing Settings] includes scheduled task execution and startup task execution. Presets include over 10 functions, including restart, shutdown, network restart, memory release, system cleaning, network sharing, network shutdown, automatic detection of network disconnects and reconnection, MWAN3 load balancing detection of reconnection, and custom scripts</b></br>"
+ msgstr "<b>任务设置包括定时任务执行和开机启动任务执行，预置：重启、关机、重启网络、释放内存、系统清理、网络共享、关闭网络、自动检测断网重连、自动检测断网重启、MWAN3负载均衡检测重连、自定义脚本等10多个功能.</b></br>"
+diff --git a/package/luci-app-autotimeset/po/zh_Hans/autotimeset.po b/package/luci-app-autotimesetpo/zh_Hans/autotimeset.po
+index 9b322f0..2fbe646 100644
+--- a/package/luci-app-autotimeset/po/zh_Hans/autotimeset.po
++++ b/package/luci-app-autotimesetpo/zh_Hans/autotimeset.po
+@@ -1,3 +1,5 @@
++msgid "Control"
++msgstr "任务"
+ 
+ msgid "<b>The original [Timing Settings] includes scheduled task execution and startup task execution. Presets include over 10 functions, including restart, shutdown, network restart, memory release, system cleaning, network sharing, network shutdown, automatic detection of network disconnects and reconnection, MWAN3 load balancing detection of reconnection, and custom scripts</b></br>"
+ msgstr "<b>任务设置包括定时任务执行和开机启动任务执行，预置：重启、关机、重启网络、释放内存、系统清理、网络共享、关闭网络、自动检测断网重连、自动检测断网重启、MWAN3负载均衡检测重连、自定义脚本等10多个功能.</b></br>"
+diff --git a/package/luci-app-autotimeset/root/usr/bin/timesethandler b/package/luci-app-autotimesetroot/usr/bin/timesethandler
+index 552f012..ba99539 100644
+--- a/package/luci-app-autotimeset/root/usr/bin/timesethandler
++++ b/package/luci-app-autotimesetroot/usr/bin/timesethandler
+@@ -20,8 +20,8 @@ limit_log() {
+ }
+ 
+ remwan3() {
+-while true; do   
+-    status=$(/usr/sbin/mwan3 status | grep error)
++while true; do
++    status=$(/usr/sbin/mwan3 status | grep -E "is\s(error|paused)\s\(\15\)")
+     if [ -z $status ]; then
+         log  "Mwan3 is OK"
+ 	exit 1

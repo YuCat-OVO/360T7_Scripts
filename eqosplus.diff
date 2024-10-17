@@ -1,0 +1,33 @@
+diff --git a/package/luci-app-eqosplus/luasrc/controller/eqosplus.lua b/package/luci-app-eqosplus/luasrc/controller/eqosplus.lua
+index cbe01b7..34c09a3 100644
+--- a/package/luci-app-eqosplus/luasrc/controller/eqosplus.lua
++++ b/package/luci-app-eqosplus/luasrc/controller/eqosplus.lua
+@@ -2,7 +2,7 @@ module("luci.controller.eqosplus", package.seeall)
+ -- Copyright 2022-2023 sirpdboy <herboy2008@gmail.com>
+ function index()
+     if not nixio.fs.access("/etc/config/eqosplus") then return end
+-    entry({"admin", "control"}, firstchild(), "Control", 44).dependent = false
++    entry({"admin", "control"}, firstchild(), _("Control"), 44).dependent = false
+ 
+     local e = entry({"admin", "control", "eqosplus"}, cbi("eqosplus"), _("Eqosplus"), 10)
+     e.dependent=false
+diff --git a/package/luci-app-eqosplus/po/zh-cn/eqosplus.po b/package/luci-app-eqosplus/po/zh-cn/eqosplus.po
+index 0fa5639..793f974 100644
+--- a/package/luci-app-eqosplus/po/zh-cn/eqosplus.po
++++ b/package/luci-app-eqosplus/po/zh-cn/eqosplus.po
+@@ -1,3 +1,5 @@
++msgid "Control"
++msgstr "任务"
+ 
+ msgid "Eqosplus"
+ msgstr "定时限速"
+diff --git a/package/luci-app-eqosplus/po/zh_Hans/eqosplus.po b/package/luci-app-eqosplus/po/zh_Hans/eqosplus.po
+index 0fa5639..793f974 100644
+--- a/package/luci-app-eqosplus/po/zh_Hans/eqosplus.po
++++ b/package/luci-app-eqosplus/po/zh_Hans/eqosplus.po
+@@ -1,3 +1,5 @@
++msgid "Control"
++msgstr "任务"
+ 
+ msgid "Eqosplus"
+ msgstr "定时限速"

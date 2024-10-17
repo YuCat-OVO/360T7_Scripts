@@ -1,0 +1,113 @@
+diff --git a/package/luci-app-advancedplus/luasrc/model/cbi/advancedplus/design-config.lua b/package/luci-app-advancedplus/luasrc/model/cbi/advancedplus/design-config.lua
+index 8ce99fa..cdea503 100644
+--- a/package/luci-app-advancedplus/luasrc/model/cbi/advancedplus/design-config.lua
++++ b/package/luci-app-advancedplus/luasrc/model/cbi/advancedplus/design-config.lua
+@@ -32,6 +32,7 @@ o.rmempty = false
+ o.description = translate('The navigation bar is display by default')
+ 
+ o = s:option(ListValue, 'navbar_proxy', translate('Navigation bar proxy'))
++o:value('mihomo', 'Mihomo')
+ o:value('openclash', 'openclash')
+ o:value('shadowsocksr', 'shadowsocksr')
+ o:value('vssr', 'vssr')
+@@ -39,7 +40,7 @@ o:value('passwall', 'passwall')
+ o:value('passwall2', 'passwall2')
+ o.default = navbar_proxy
+ o.rmempty = false
+-o.description = translate('OpenClash by default')
++o.description = translate('Mihomo by default')
+ 
+ o = s:option(Button, 'save', translate('Save Changes'))
+ o.inputstyle = 'reload'
+diff --git a/package/luci-app-advancedplus/luasrc/model/cbi/advancedplus/kucatset.lua b/package/luci-app-advancedplus/luasrc/model/cbi/advancedplus/kucatset.lua
+index 9867619..636d1f7 100644
+--- a/package/luci-app-advancedplus/luasrc/model/cbi/advancedplus/kucatset.lua
++++ b/package/luci-app-advancedplus/luasrc/model/cbi/advancedplus/kucatset.lua
+@@ -87,10 +87,11 @@ e:value('bypass', translate('bypass'))
+ e:value('vssr', translate('Hello World'))
+ e:value('passwall', translate('passwall'))
+ e:value('passwall2', translate('passwall2'))
++e:value('mihomo', translate('Mihomo'))
+ e:value('openclash', translate('OpenClash'))
+ e:value('chatgpt-web', translate('Chatgpt Web'))
+ e:value('ddns-go', translate('DDNS-GO'))
+-e.default = 'bypass'
++e.default = 'mihomo'
+ e.rmempty = false
+ 
+ e = t:option(Flag, "fontmode", translate("Care mode (large font)"))
+diff --git a/package/luci-app-advancedplus/po/zh-cn/advancedplus.po b/package/luci-app-advancedplus/po/zh-cn/advancedplus.po
+index 49d9aeb..42723ef 100644
+--- a/package/luci-app-advancedplus/po/zh-cn/advancedplus.po
++++ b/package/luci-app-advancedplus/po/zh-cn/advancedplus.po
+@@ -358,6 +358,9 @@ msgstr "默认显示导航栏"
+ msgid "Navigation bar proxy"
+ msgstr "导航栏代理"
+ 
++msgid "Mihomo by default"
++msgstr "默认 Mihomo"
++
+ msgid "OpenClash by default"
+ msgstr "默认 OpenClash"
+ 
+diff --git a/package/luci-app-advancedplus/po/zh_Hans/advancedplus.po b/package/luci-app-advancedplus/po/zh_Hans/advancedplus.po
+index 49d9aeb..42723ef 100644
+--- a/package/luci-app-advancedplus/po/zh_Hans/advancedplus.po
++++ b/package/luci-app-advancedplus/po/zh_Hans/advancedplus.po
+@@ -358,6 +358,9 @@ msgstr "默认显示导航栏"
+ msgid "Navigation bar proxy"
+ msgstr "导航栏代理"
+ 
++msgid "Mihomo by default"
++msgstr "默认 Mihomo"
++
+ msgid "OpenClash by default"
+ msgstr "默认 OpenClash"
+ 
+diff --git a/package/luci-app-advancedplus/root/etc/config/advancedplus b/package/luci-app-advancedplus/root/etc/config/advancedplus
+index 295aaf6..a00ad1c 100644
+--- a/package/luci-app-advancedplus/root/etc/config/advancedplus
++++ b/package/luci-app-advancedplus/root/etc/config/advancedplus
+@@ -1,6 +1,6 @@
+ 
+ config basic
+-	option gossr 'bypass'
++	option gossr 'mihomo'
+ 	option gouser 'advancedplus'
+ 	option gohome 'overview'
+ 	option fontmode '0'
+diff --git a/package/luci-app-advancedplus/root/etc/config/design b/package/luci-app-advancedplus/root/etc/config/design
+index faa6535..083bf1b 100644
+--- a/package/luci-app-advancedplus/root/etc/config/design
++++ b/package/luci-app-advancedplus/root/etc/config/design
+@@ -1,4 +1,4 @@
+ config global
+ 	option mode 'dark'
+ 	option navbar 'display'
+-	option navbar_proxy 'openclash'
+\ No newline at end of file
++	option navbar_proxy 'mihomo'
+\ No newline at end of file
+diff --git a/package/luci-app-advancedplus/root/etc/init.d/advancedplus b/package/luci-app-advancedplus/root/etc/init.d/advancedplus
+index e117202..2dcbf5a 100644
+--- a/package/luci-app-advancedplus/root/etc/init.d/advancedplus
++++ b/package/luci-app-advancedplus/root/etc/init.d/advancedplus
+@@ -14,7 +14,7 @@ rm -rf /etc/config/advancedplus
+ cat <<EOF  >/etc/config/advancedplus
+ 
+ config basic
+-	option gossr 'bypass'
++	option gossr 'mihomo'
+ 	option gouser 'advancedplus'
+ 	option gohome 'overview'
+ 	option fontmode '0'
+@@ -232,9 +232,6 @@ tsoset
+         $ipt -t mangle -A POSTROUTING -o ${dev} -j TTL --ttl-set 64
+     fi
+     #cpumode=`uci -q get advancedplus.@basic[0].cpumode`
+-    #[ ! $cpumode ] || cpumodeset $cpumode   /usr/bin/zsh
+-    sed -i "\/bin\/zsh/d" /etc/profile
+-    [ "x$(uci -q get advancedplus.@basic[0].usshmenu)" = "x1" ] || echo '/usr/bin/zsh'  >> /etc/profile
+     uci commit netwizard 
+ }
+ 
