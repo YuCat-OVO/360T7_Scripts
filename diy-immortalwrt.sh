@@ -165,6 +165,54 @@ check_content_in_file() {
     fi
 }
 
+# 获取 GitHub API 数据的函数，带有 API 限制重试和提醒机制
+fetch_mihomo_branch_data() {
+    set +x
+    local API_URL="https://api.github.com/repos/MetaCubeX/mihomo/branches"
+    local BRANCH_NAME="Alpha"
+    local mihomo_config="package/mihomo/Makefile"  # 需要替换的文件名
+    local retries=3  # 最大重试次数
+    local retry_interval=60  # 每次重试的等待时间 (秒)
+    
+    # 将分支名称转换为小写
+    local lower_branch=$(echo "$BRANCH_NAME" | tr '[:upper:]' '[:lower:]')
+    
+    for ((i=1; i<=$retries; i++)); do
+        log_warning "尝试第 $i 次获取分支数据..."
+        
+        # 使用 curl 获取 JSON 并使用 jq 解析
+        sha=$(curl -s -H "Accept: application/vnd.github.v3+json" $API_URL | jq -r --arg branch "$BRANCH_NAME" '.[] | select(.name == $branch) | .commit.sha')
+        
+        # 检查是否获取到了数据
+        if [[ -n "$sha" ]]; then
+            # 获取短格式的 sha (前7位)
+            short_sha=$(echo $sha | cut -c 1-7)
+            
+            # 替换 PKG_SOURCE_VERSION 和 PKG_BUILD_VERSION 中的内容
+            sed -i "s/PKG_SOURCE_VERSION:=.*/PKG_SOURCE_VERSION:=$sha/" $mihomo_config
+            sed -i "s/PKG_BUILD_VERSION:=$lower_branch-.*/PKG_BUILD_VERSION:=$lower_branch-$short_sha/" $mihomo_config
+            
+            # 移除 PKG_MIRROR_HASH 行
+            sed -i "s/PKG_MIRROR_HASH:=.*/PKG_MIRROR_HASH:=skip/" $mihomo_config
+            
+            log_success "成功更新配置文件: $mihomo_config"
+            break
+        else
+            # 如果没有获取到 sha，可能是因为 API 达到了限制
+            remaining_rate_limit=$(curl -s -I $API_URL | grep -FiX "X-RateLimit-Remaining" | awk '{print $2}' | tr -d '\r')
+            
+            if [[ "$remaining_rate_limit" == "0" ]]; then
+                log_error "API 请求达到限制，等待 $retry_interval 秒后重试..."
+                sleep $retry_interval
+            else
+                log_error "获取分支数据失败，请检查 API 请求或网络连接。"
+                exit 1
+            fi
+        fi
+    done
+    set -x
+}
+
 # Add a feed source
 #echo 'src-git helloworld https://github.com/fw876/helloworld' >>feeds.conf.default
 #echo 'src-git passwall https://github.com/xiaorouji/openwrt-passwall' >>feeds.conf.default
@@ -255,8 +303,6 @@ cp -rf mosdns/luci-app-mosdns/ package/luci-app-mosdns/
 delete_directory package/v2dat/
 cp -rf mosdns/v2dat/ package/v2dat/
 
-sed -i "s@geoip-only-cn-private.dat@geoip.dat@g" package/v2ray-geodata/Makefile
-
 # mihomo
 git_clone_or_pull https://github.com/morytyann/OpenWrt-mihomo OpenWrt-mihomo main
 
@@ -266,27 +312,7 @@ cp -rf OpenWrt-mihomo/mihomo/ package/mihomo/
 delete_directory package/luci-app-mihomo/
 cp -rf OpenWrt-mihomo/luci-app-mihomo/ package/luci-app-mihomo/
 
-# 获取 API 数据
-API_URL="https://api.github.com/repos/MetaCubeX/mihomo/branches"
-BRANCH_NAME="Alpha"
-
-# 将分支名称转换为小写
-lower_branch=$(echo "$BRANCH_NAME" | tr '[:upper:]' '[:lower:]')
-
-# 使用 curl 获取 JSON 并使用 jq 解析
-sha=$(curl -s $API_URL | jq -r --arg branch "$BRANCH_NAME" '.[] | select(.name == $branch) | .commit.sha')
-
-# 获取短格式的 sha (前7位)
-short_sha=$(echo $sha | cut -c 1-7)
-
-# 定义配置文件
-mihomo_config="package/mihomo/Makefile"  # 需要替换的文件名
-
-# 替换 PKG_SOURCE_VERSION 和 PKG_BUILD_VERSION 中的内容
-sed -i "s/PKG_SOURCE_VERSION:=.*/PKG_SOURCE_VERSION:=$sha/" $mihomo_config
-sed -i "s/PKG_BUILD_VERSION:=$lower_branch-.*/PKG_BUILD_VERSION:=$lower_branch-$short_sha/" $mihomo_config
-
-sed -i "/PKG_MIRROR_HASH/d" $mihomo_config
+fetch_mihomo_branch_data
 
 # UA2F
 find ./ | grep Makefile | grep feeds/packages/.*/ua2f | xargs rm -f
@@ -324,7 +350,12 @@ git_clone_or_pull https://github.com/sirpdboy/luci-app-autotimeset package/luci-
 # ./add_turboacc.sh --no-sfe
 
 # MentoHUST
-sed -i "/PKG_MIRROR_HASH/d" feeds/packages/net/mentohust/Makefile
+sed -i "s/PKG_MIRROR_HASH:=.*/PKG_MIRROR_HASH:=skip/"  feeds/packages/net/mentohust/Makefile
+
+# miniupnp
+git_clone_or_pull https://github.com/kiddin9/kwrt-packages.git kwrt-packages
+delete_directory feeds/packages/net/miniupnpd/
+cp -rf kwrt-packages/miniupnpd/ feeds/packages/net/miniupnpd/
 
 # 设置密码为空（安装固件时无需密码登陆，然后自己修改想要的密码）
 # sed -i 's@.*CYXluq4wUazHjmCDBCqXF*@#&@g' package/lean/default-settings/files/zzz-default-settings
@@ -376,6 +407,7 @@ apply_patch autotimeset.diff
 apply_patch minieap.diff
 apply_patch eqosplus.diff
 apply_patch advancedplus.diff
+apply_patch geodata.diff
 
 # wget https://github.com/kiddin9/Kwrt/raw/master/devices/mediatek_filogic/patches/01-360t7.patch -O 01-360t7.patch
 
