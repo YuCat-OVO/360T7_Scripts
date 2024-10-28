@@ -1,54 +1,28 @@
 diff --git a/package/luci-app-mosdns/root/usr/share/mosdns/mosdns.sh b/package/luci-app-mosdns/root/usr/share/mosdns/mosdns.sh
-index b0534da..f28cc57 100755
+index b0534da..e8e5dec 100755
 --- a/package/luci-app-mosdns/root/usr/share/mosdns/mosdns.sh
 +++ b/package/luci-app-mosdns/root/usr/share/mosdns/mosdns.sh
-@@ -107,12 +107,12 @@ geodat_update() (
+@@ -106,7 +106,7 @@ geodat_update() (
+     TMPDIR=$(mktemp -d) || exit 1
      [ -n "$(uci -q get mosdns.config.github_proxy)" ] && mirror="$(uci -q get mosdns.config.github_proxy)/"
      # geoip.dat - cn-private
-     geoip_type=$(uci -q get mosdns.config.geoip_type || echo "geoip-only-cn-private")
--    echo -e "Downloading "$mirror"https://github.com/Loyalsoldier/geoip/releases/latest/download/"$geoip_type".dat"
--    curl --connect-timeout 5 -m 120 --ipv4 -kfSLo "$TMPDIR/geoip.dat" ""$mirror"https://github.com/Loyalsoldier/geoip/releases/latest/download/"$geoip_type".dat"
-+    echo -e "Downloading "$mirror"https://github.com/MetaCubeX/meta-rules-dat/releases/latest/download/"$geoip_type".dat"
-+    curl --connect-timeout 5 -m 120 --ipv4 -kfSLo "$TMPDIR/geoip.dat" ""$mirror"https://github.com/MetaCubeX/meta-rules-dat/releases/latest/download/"$geoip_type".dat"
+-    geoip_type=$(uci -q get mosdns.config.geoip_type || echo "geoip-only-cn-private")
++    geoip_type=$(uci -q get mosdns.config.geoip_type || echo "geoip")
+     echo -e "Downloading "$mirror"https://github.com/Loyalsoldier/geoip/releases/latest/download/"$geoip_type".dat"
+     curl --connect-timeout 5 -m 120 --ipv4 -kfSLo "$TMPDIR/geoip.dat" ""$mirror"https://github.com/Loyalsoldier/geoip/releases/latest/download/"$geoip_type".dat"
      [ $? -ne 0 ] && rm -rf "$TMPDIR" && exit 1
-     # checksum - geoip.dat
--    echo -e "Downloading "$mirror"https://github.com/Loyalsoldier/geoip/releases/latest/download/"$geoip_type".dat.sha256sum"
--    curl --connect-timeout 5 -m 20 --ipv4 -kfSLo "$TMPDIR/geoip.dat.sha256sum" ""$mirror"https://github.com/Loyalsoldier/geoip/releases/latest/download/"$geoip_type".dat.sha256sum"
-+    echo -e "Downloading "$mirror"https://github.com/MetaCubeX/meta-rules-dat/releases/latest/download/"$geoip_type".dat.sha256sum"
-+    curl --connect-timeout 5 -m 20 --ipv4 -kfSLo "$TMPDIR/geoip.dat.sha256sum" ""$mirror"https://github.com/MetaCubeX/meta-rules-dat/releases/latest/download/"$geoip_type".dat.sha256sum"
-     [ $? -ne 0 ] && rm -rf "$TMPDIR" && exit 1
-     if [ "$(sha256sum "$TMPDIR/geoip.dat" | awk '{print $1}')" != "$(cat "$TMPDIR/geoip.dat.sha256sum" | awk '{print $1}')" ]; then
-         echo -e "\e[1;31mgeoip.dat checksum error"
-@@ -121,12 +121,12 @@ geodat_update() (
-     fi
- 
-     # geosite.dat
--    echo -e "Downloading "$mirror"https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat"
--    curl --connect-timeout 5 -m 120 --ipv4 -kfSLo "$TMPDIR/geosite.dat" ""$mirror"https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat"
-+    echo -e "Downloading "$mirror"https://github.com/MetaCubeX/meta-rules-dat/releases/latest/download/geosite.dat"
-+    curl --connect-timeout 5 -m 120 --ipv4 -kfSLo "$TMPDIR/geosite.dat" ""$mirror"https://github.com/MetaCubeX/meta-rules-dat/releases/latest/download/geosite.dat"
-     [ $? -ne 0 ] && rm -rf "$TMPDIR" && exit 1
-     # checksum - geosite.dat
--    echo -e "Downloading "$mirror"https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat.sha256sum"
--    curl --connect-timeout 5 -m 20 --ipv4 -kfSLo "$TMPDIR/geosite.dat.sha256sum" ""$mirror"https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat.sha256sum"
-+    echo -e "Downloading "$mirror"https://github.com/MetaCubeX/meta-rules-dat/releases/latest/download/geosite.dat.sha256sum"
-+    curl --connect-timeout 5 -m 20 --ipv4 -kfSLo "$TMPDIR/geosite.dat.sha256sum" ""$mirror"https://github.com/MetaCubeX/meta-rules-dat/releases/latest/download/geosite.dat.sha256sum"
-     [ $? -ne 0 ] && rm -rf "$TMPDIR" && exit 1
-     if [ "$(sha256sum "$TMPDIR/geosite.dat" | awk '{print $1}')" != "$(cat "$TMPDIR/geosite.dat.sha256sum" | awk '{print $1}')" ]; then
-         echo -e "\e[1;31mgeosite.dat checksum error"
+
 
 diff --git a/package/v2ray-geodata/Makefile b/package/v2ray-geodata/Makefile
-index ae728c2..453cdf6 100644
+index ae728c2..2919672 100644
 --- a/package/v2ray-geodata/Makefile
 +++ b/package/v2ray-geodata/Makefile
-@@ -37,8 +37,8 @@ define Package/v2ray-geosite
+@@ -37,7 +37,7 @@ define Package/v2ray-geosite
    LICENSE:=GPL-3.0
  endef
  
 -GEOIP_URL:=https://github.com/Loyalsoldier/geoip/releases/latest/download/geoip-only-cn-private.dat
--GEOSITE_URL:=https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat
-+GEOIP_URL:=https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.dat
-+GEOSITE_URL:=https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat
++GEOIP_URL:=https://github.com/Loyalsoldier/geoip/releases/latest/download/geoip.dat
+ GEOSITE_URL:=https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat
  
  define Build/Compile
- 	( \
