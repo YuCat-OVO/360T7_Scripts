@@ -65,7 +65,7 @@ git_clone_or_pull() {
             fi
         fi
         
-        echo -e "${GREEN}使用的分支为：$branch${NC}"
+        log_success "使用的分支为：$branch"
     fi
     
     # 如果目标目录存在，尝试 pull 更新
@@ -77,7 +77,7 @@ git_clone_or_pull() {
             log_success "正在更新 ${repo_url} 的 ${branch} 分支"
             git pull origin "$branch"
             if [ $? -eq 0 ]; then
-                echo -e "${GREEN}更新成功！${NC}"
+                log_success "更新成功！"
                 cd "$original_dir" || exit 1  # 更新成功后恢复工作目录
                 return 0
             else
@@ -97,7 +97,7 @@ git_clone_or_pull() {
             log_success "正在克隆 ${repo_url} 的 ${branch} 分支, 目标目录 ${target_dir}"
             git clone --depth 1 -b "$branch" "$repo_url" "$target_dir"
             if [ $? -eq 0 ]; then
-                echo -e "${GREEN}浅克隆成功！${NC}"
+                log_success "浅克隆成功！"
                 cd "$original_dir" || exit 1  # 克隆成功后恢复工作目录
                 return 0
             else
@@ -135,7 +135,7 @@ delete_directory() {
     
     # 检查删除是否成功
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}成功：目录 '$dir' 已删除。${NC}"
+        log_success "成功：目录 '$dir' 已删除。"
     else
         echo -e "${RED}错误：删除目录 '$dir' 失败。${NC}"
         return 1
@@ -226,47 +226,50 @@ fetch_mihomo_branch_data() {
 sed -i "s/\blibpcre\b/libpcre2/" package/feeds/telephony/freeswitch/Makefile
 
 # 修改时区 UTF-8
-echo -e "${GREEN}修改时区${NC}"
+log_success "修改时区"
 sed -i 's/UTC/CST-8/g' package/base-files/files/bin/config_generate
 
 # 时区
-echo -e "${GREEN}修改NTP服务器${NC}"
+log_success "修改NTP服务器"
 sed -i 's/time1.apple.com/time1.cloud.tencent.com/g' package/base-files/files/bin/config_generate
 sed -i 's/time1.google.com/ntp.aliyun.com/g' package/base-files/files/bin/config_generate
 sed -i 's/time.cloudflare.com/cn.ntp.org.cn/g' package/base-files/files/bin/config_generate
 sed -i 's/pool.ntp.org/cn.pool.ntp.org/g' package/base-files/files/bin/config_generate
 
 # 修改主机名 OP
-echo -e "${GREEN}修改主机名${NC}"
+log_success "修改主机名"
 sed -i 's/OpenWrt/ImmortalWrt/g' package/base-files/files/bin/config_generate
 
 # 修改wifi名称（mtwifi-cfg）
-echo -e "${GREEN}修改wifi名称${NC}"
+log_success "修改wifi名称"
 sed -i 's/ssid="ImmortalWrt-2.4G"/ssid="YuGuGu_IMM-2.4G"/g' package/mtk/applications/mtwifi-cfg/files/mtwifi.sh
 sed -i 's/ssid="ImmortalWrt-5G"/ssid="YuGuGu_IMM-5G"/g' package/mtk/applications/mtwifi-cfg/files/mtwifi.sh
 
 # 替换源
-echo -e "${GREEN}替换仓库默认源${NC}"
+log_success "替换仓库默认源"
 sed -i 's,mirrors.vsean.net/openwrt,mirror.nju.edu.cn/immortalwrt,g' package/emortal/default-settings/files/99-default-settings-chinese
 
 # 修改默认IP
-echo -e "${GREEN}修改默认IP${NC}"
+log_success "修改默认IP"
 sed -i 's/192.168.1.1/192.168.114.1/g' package/base-files/files/bin/config_generate # 定制默认IP
 
 # 修改编译信息
-echo -e "${GREEN}修改编译信息${NC}"
+log_success "修改编译信息"
 sed -i "s/DISTRIB_DESCRIPTION=.*/DISTRIB_DESCRIPTION='OpenWrt By YuGuGu ($(date "+%Y-%m-%d %H:%M"))'/g" package/base-files/files/etc/openwrt_release
 
 # sed -i "s/DISTRIB_DESCRIPTION=.*/DISTRIB_DESCRIPTION='OpenWrt By YuGuGu ($(date +%Y-%m-%d %H:%M)) '/g" package/base-files/files/etc/openwrt_release
 
 # 修改 ash 为 bash
+log_success "修改 ash 为 bash"
 sed -i "s#/bin/ash#/bin/bash#g" package/base-files/files/etc/passwd
 
+log_success "设置sysctl"
 check_content_in_file "net.core.default_qdisc = cake" package/base-files/files/etc/sysctl.d/99-custom.conf
 check_content_in_file "net.ipv4.tcp_congestion_control = bbr" package/base-files/files/etc/sysctl.d/99-custom.conf
 
 
 # 移除主题重复软件包
+log_success "设置argon主题"
 find ./ | grep Makefile | grep package/feeds/luci/luci-theme-argon | xargs rm -f
 find ./ | grep Makefile | grep package/feeds/luci/luci-app-argon-config | xargs rm -f
 
@@ -281,9 +284,12 @@ find . -type f -regex ".*bg1.jpg" -exec cp -f bg1.jpg {} \;
 git_clone_or_pull https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon master
 # git_clone_or_pull https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config master
 
+log_success "设置mosdns"
 # 移除官方golang防止mosdns编译爆炸
 delete_directory feeds/packages/lang/golang
-git_clone_or_pull https://github.com/sbwml/packages_lang_golang feeds/packages/lang/golang 23.x
+# git_clone_or_pull https://github.com/sbwml/packages_lang_golang feeds/packages/lang/golang 23.x
+git_clone_or_pull https://github.com/sbwml/packages_lang_golang packages_lang_golang 23.x
+cp -rf packages_lang_golang/ feeds/packages/lang/golang/
 
 # 移除mosdns重复软件包防止mosdns编译爆炸
 find ./ | grep Makefile | grep feeds/packages/.*/v2ray-geodata | xargs rm -f
@@ -291,7 +297,7 @@ find ./ | grep Makefile | grep feeds/packages/.*/mosdns | xargs rm -f
 
 delete_directory feeds/packages/net/v2ray-geodata
 
-git_clone_or_pull https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
+git_clone_or_pull https://github.com/sbwml/v2ray-geodata v2ray-geodata
 git_clone_or_pull https://github.com/sbwml/luci-app-mosdns mosdns v5
 
 delete_directory package/mosdns/
@@ -300,10 +306,14 @@ cp -rf mosdns/mosdns/ package/mosdns/
 delete_directory package/luci-app-mosdns/
 cp -rf mosdns/luci-app-mosdns/ package/luci-app-mosdns/
 
+delete_directory package/v2ray-geodata/
+cp -rf v2ray-geodata/ package/v2ray-geodata/
+
 delete_directory package/v2dat/
 cp -rf mosdns/v2dat/ package/v2dat/
 
 # mihomo
+log_success "设置mihomo"
 git_clone_or_pull https://github.com/morytyann/OpenWrt-mihomo OpenWrt-mihomo main
 
 delete_directory package/mihomo/
@@ -315,6 +325,7 @@ cp -rf OpenWrt-mihomo/luci-app-mihomo/ package/luci-app-mihomo/
 fetch_mihomo_branch_data
 
 # UA2F
+log_success "设置UA2F"
 find ./ | grep Makefile | grep feeds/packages/.*/ua2f | xargs rm -f
 git_clone_or_pull https://github.com/Zxilly/UA2F package/UA2F
 
@@ -324,19 +335,23 @@ cp -rf luci-app-ua2f/luci-app-ua2f/ package/luci-app-ua2f/
 delete_directory luci-app-ua2f
 
 # tailscale
+log_success "设置tailscale"
 sed -i '/\/etc\/init\.d\/tailscale/d;/\/etc\/config\/tailscale/d;' feeds/packages/net/tailscale/Makefile
 git_clone_or_pull https://github.com/asvow/luci-app-tailscale.git package/luci-app-tailscale
 
 # eqosplus
+log_success "设置eqosplus"
 git_clone_or_pull https://github.com/sirpdboy/luci-app-eqosplus.git package/luci-app-eqosplus
 
 # advancedplus
+log_success "设置advancedplus"
 git_clone_or_pull https://github.com/sirpdboy/luci-theme-kucat.git package/luci-theme-kucat js
 git_clone_or_pull https://github.com/sirpdboy/luci-app-advancedplus.git package/luci-app-advancedplus
 
 # sed -i "/zsh/d" package/luci-app-advancedplus/root/etc/init.d/advancedplus
 
 # autotimeset
+log_success "设置autotimeset"
 git_clone_or_pull https://github.com/sirpdboy/luci-app-autotimeset package/luci-app-autotimeset
 
 # turboacc
@@ -350,9 +365,11 @@ git_clone_or_pull https://github.com/sirpdboy/luci-app-autotimeset package/luci-
 # ./add_turboacc.sh --no-sfe
 
 # MentoHUST
+log_success "设置MentoHUST"
 sed -i "s/PKG_MIRROR_HASH:=.*/PKG_MIRROR_HASH:=skip/"  feeds/packages/net/mentohust/Makefile
 
 # miniupnp
+log_success "设置miniupnp"
 git_clone_or_pull https://github.com/kiddin9/kwrt-packages.git kwrt-packages
 delete_directory feeds/packages/net/miniupnpd/
 cp -rf kwrt-packages/miniupnpd/ feeds/packages/net/miniupnpd/
