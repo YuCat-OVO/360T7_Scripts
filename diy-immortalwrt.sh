@@ -312,6 +312,8 @@ cp -rf v2ray-geodata/ package/v2ray-geodata/
 delete_directory package/v2dat/
 cp -rf mosdns/v2dat/ package/v2dat/
 
+sed -i 's/^PKG_VERSION:=\$(shell date "+%Y-%m-%d")$/PKG_VERSION:=\$(shell date "+%Y%m%d")/g' package/v2ray-geodata/Makefile
+
 # mihomo
 log_success "设置mihomo"
 git_clone_or_pull https://github.com/morytyann/OpenWrt-mihomo OpenWrt-mihomo main
