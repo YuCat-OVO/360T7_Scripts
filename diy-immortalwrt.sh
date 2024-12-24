@@ -20,196 +20,213 @@ YELLOW='\033[0;33m' # 黄色
 NC='\033[0m'        # 无颜色
 
 log_success() {
-	echo -e "${GREEN}$1${NC}"
+    echo -e "${GREEN}$1${NC}"
 }
 
 log_warning() {
-	echo -e "${YELLOW}$1${NC}"
+    echo -e "${YELLOW}$1${NC}"
 }
 
 log_error() {
-	echo -e "${RED}$1${NC}"
+    echo -e "${RED}$1${NC}"
 }
 
 log_warning "当前运行目录为 $(pwd)"
 
 set -x # 显示正在执行的命令
+
 git_clone_or_pull() {
-	set +x
-	local repo_url=$1   # 仓库的URL
-	local target_dir=$2 # 克隆的目标目录
-	local branch=$3     # 选择的分支
-	local retries=3     # 重试次数
-	local delay=5       # 每次重试间隔的秒数
-	local original_dir  # 记录当前工作目录
-	original_dir=$(pwd)
+    set +x
+    local repo_url=$1   # 仓库的URL
+    local target_dir=$2 # 克隆的目标目录
+    local branch=$3     # 选择的分支
+    local retries=3     # 重试次数
+    local delay=5       # 每次重试间隔的秒数
+    local original_dir  # 记录当前工作目录
+    original_dir=$(pwd)
 
-	log_warning "正在拉取$repo_url"
+    log_warning "正在拉取$repo_url"
 
-	# 如果未提供分支，尝试检测默认分支
-	if [ -z "$branch" ]; then
-		echo -e "${YELLOW}未提供分支，尝试检测默认分支...${NC}"
+    # 如果未提供分支，尝试检测默认分支
+    if [ -z "$branch" ]; then
+        echo -e "${YELLOW}未提供分支，尝试检测默认分支...${NC}"
 
-		# 获取默认分支
-		branch=$(git ls-remote --symref "$repo_url" HEAD 2>/dev/null | awk '/^ref:/ {print $2}' | sed 's|refs/heads/||')
+        for ((i = 1; i <= retries; i++)); do
+            log_success "正在获取 ${repo_url} 的默认分支"
 
-		# 如果检测不到默认分支，使用 'master' 或 'main'
-		if [ -z "$branch" ]; then
-			echo -e "${YELLOW}检测默认分支失败，使用 'master' 或 'main'...${NC}"
-			branch="master"
+            # 获取默认分支
+            branch=$(git ls-remote --symref "$repo_url" HEAD 2>/dev/null | awk '/^ref:/ {print $2}' | sed 's|refs/heads/||')
 
-			# 检查 'master' 是否存在，如果不存在则使用 'main'
-			if ! git ls-remote --exit-code --heads "$repo_url" "$branch" >/dev/null; then
-				branch="main"
-			fi
-		fi
+            if [ $? -eq 0 ]; then
+                log_success "获取成功！分支为 ${branch}"
+                break
+            else
+                log_error "获取分支失败，第 $i 次重试..."
+                sleep $delay
+            fi
+        done
 
-		log_success "使用的分支为：$branch"
-	fi
+        # 如果检测不到默认分支，使用 'master' 或 'main'
+        if [ -z "$branch" ]; then
+            echo -e "${YELLOW}检测默认分支失败，使用 'master' 或 'main'...${NC}"
+            branch="master"
 
-	# 如果目标目录存在，尝试 pull 更新
-	if [ -d "$target_dir" ]; then
-		echo -e "${YELLOW}目录已存在，尝试更新仓库...${NC}"
-		cd "$target_dir" || exit 1
+            # 检查 'master' 是否存在，如果不存在则使用 'main'
+            if ! git ls-remote --exit-code --heads "$repo_url" "$branch" >/dev/null; then
+                branch="main"
+            fi
+        fi
 
-		for ((i = 1; i <= retries; i++)); do
-			log_success "正在更新 ${repo_url} 的 ${branch} 分支"
-			git pull origin "$branch"
-			if [ $? -eq 0 ]; then
-				log_success "更新成功！"
-				cd "$original_dir" || exit 1 # 更新成功后恢复工作目录
-				return 0
-			else
-				echo -e "${RED}更新失败，第 $i 次重试...${NC}"
-				sleep $delay
-			fi
-		done
+        log_success "使用的分支为：$branch"
+    fi
 
-		cd "$original_dir" || exit 1 # 恢复工作目录
-		log_error "更新多次失败，请检查网络或仓库状态。"
-		return 1
+    # 如果目标目录存在，尝试 pull 更新
+    if [ -d "$target_dir" ]; then
+        echo -e "${YELLOW}目录已存在，尝试更新仓库...${NC}"
+        cd "$target_dir" || exit 1
 
-		# 如果目标目录不存在，尝试浅克隆
-	else
-		echo -e "${YELLOW}目录不存在，开始浅克隆仓库...${NC}"
-		for ((i = 1; i <= retries; i++)); do
-			log_success "正在克隆 ${repo_url} 的 ${branch} 分支, 目标目录 ${target_dir}"
-			git clone --depth 1 -b "$branch" "$repo_url" "$target_dir"
-			if [ $? -eq 0 ]; then
-				log_success "浅克隆成功！"
-				cd "$original_dir" || exit 1 # 克隆成功后恢复工作目录
-				return 0
-			else
-				echo -e "${RED}浅克隆失败，第 $i 次重试...${NC}"
-				sleep $delay
-			fi
-		done
+        for ((i = 1; i <= retries; i++)); do
+            log_success "正在更新 ${repo_url} 的 ${branch} 分支"
+            git pull origin "$branch"
+            if [ $? -eq 0 ]; then
+                log_success "更新成功！"
+                cd "$original_dir" || exit 1 # 更新成功后恢复工作目录
+                return 0
+            else
+                log_error "更新失败，第 $i 次重试..."
+                sleep $delay
+            fi
+        done
 
-		echo -e "${RED}浅克隆多次失败，请检查网络或仓库状态。${NC}"
-		return 1
-	fi
-	set -x
+        cd "$original_dir" || exit 1 # 恢复工作目录
+        log_error "更新多次失败，请检查网络或仓库状态。"
+        return 1
+
+        # 如果目标目录不存在，尝试浅克隆
+    else
+        echo -e "${YELLOW}目录不存在，开始浅克隆仓库...${NC}"
+        for ((i = 1; i <= retries; i++)); do
+            log_success "正在克隆 ${repo_url} 的 ${branch} 分支, 目标目录 ${target_dir}"
+            git clone --depth 1 -b "$branch" "$repo_url" "$target_dir"
+            if [ $? -eq 0 ]; then
+                log_success "浅克隆成功！"
+                cd "$original_dir" || exit 1 # 克隆成功后恢复工作目录
+                return 0
+            else
+                log_error "浅克隆失败，第 $i 次重试..."
+                sleep $delay
+            fi
+        done
+
+        log_error "浅克隆多次失败，请检查网络或仓库状态。"
+        return 1
+    fi
+    set -x
 }
 
 # 删除文件夹函数
 delete_directory() {
-	set +x
-	local dir="$1"
+    set +x
+    local dir="$1"
 
-	# 检查是否提供目录路径
-	if [ -z "$dir" ]; then
-		echo -e "${RED}错误：没有提供要删除的文件夹路径。${NC}"
-		return 1
-	fi
+    # 检查是否提供目录路径
+    if [ -z "$dir" ]; then
+        log_error "错误：没有提供要删除的文件夹路径。"
+        return 1
+    fi
 
-	# 检查目录是否存在
-	if [ ! -d "$dir" ]; then
-		echo -e "${YELLOW}警告：目录 '$dir' 不存在。${NC}"
-		return 1
-	fi
+    # 检查目录是否存在
+    if [ ! -d "$dir" ]; then
+        echo -e "${YELLOW}警告：目录 '$dir' 不存在。${NC}"
+        return 1
+    fi
 
-	# 执行删除操作
-	log_error "正在删除 ${dir}"
-	rm -rf "$dir"
+    # 执行删除操作
+    log_error "正在删除 ${dir}"
+    rm -rf "$dir"
 
-	# 检查删除是否成功
-	if [ $? -eq 0 ]; then
-		log_success "成功：目录 '$dir' 已删除。"
-	else
-		echo -e "${RED}错误：删除目录 '$dir' 失败。${NC}"
-		return 1
-	fi
-	set -x
+    # 检查删除是否成功
+    if [ $? -eq 0 ]; then
+        log_success "成功：目录 '$dir' 已删除。"
+    else
+        log_error "错误：删除目录 '$dir' 失败。"
+        return 1
+    fi
+    set -x
 }
 
 apply_patch() {
-	patch_file=$1
-	if patch --dry-run -p1 <"$patch_file" >/dev/null 2>&1; then
-		patch -p1 <"$patch_file"
-		log_success "$patch_file 补丁应用成功"
-	else
-		log_error "$patch_file 补丁已经应用或无效"
-	fi
+    set +x
+    patch_file=$1
+    if patch --dry-run -p1 <"$patch_file" >/dev/null 2>&1; then
+        patch -p1 <"$patch_file"
+        log_success "$patch_file 补丁应用成功"
+    else
+        log_error "$patch_file 补丁已经应用或无效"
+    fi
+    set -x
 }
 
 check_content_in_file() {
-	local content="$1"
-	local file="$2"
-	if grep -q "$content" "$file"; then
-		log_error "文件 '$file' 包含内容: '$content', 跳过"
-	else
-		log_success "写入 '$content' 到 '$file'"
-		echo "$content" >>"$file"
-	fi
+    set +x
+    local content="$1"
+    local file="$2"
+    if grep -q "$content" "$file"; then
+        log_error "文件 '$file' 包含内容: '$content', 跳过"
+    else
+        log_success "写入 '$content' 到 '$file'"
+        echo "$content" >>"$file"
+    fi
+    set -x
 }
 
 # 获取 GitHub API 数据的函数，带有 API 限制重试和提醒机制
 fetch_mihomo_branch_data() {
-	set +x
-	local API_URL="https://api.github.com/repos/MetaCubeX/mihomo/branches"
-	local BRANCH_NAME="Alpha"
-	local mihomo_config="package/mihomo/Makefile" # 需要替换的文件名
-	local retries=3                               # 最大重试次数
-	local retry_interval=60                       # 每次重试的等待时间 (秒)
+    set +x
+    local API_URL="https://api.github.com/repos/MetaCubeX/mihomo/branches"
+    local BRANCH_NAME="Alpha"
+    local mihomo_config="package/mihomo/Makefile" # 需要替换的文件名
+    local retries=3                               # 最大重试次数
+    local retry_interval=60                       # 每次重试的等待时间 (秒)
 
-	# 将分支名称转换为小写
-	local lower_branch=$BRANCH_NAME
-	lower_branch=$(echo "$BRANCH_NAME" | tr '[:upper:]' '[:lower:]')
+    # 将分支名称转换为小写
+    local lower_branch=$BRANCH_NAME
+    lower_branch=$(echo "$BRANCH_NAME" | tr '[:upper:]' '[:lower:]')
 
-	for ((i = 1; i <= retries; i++)); do
-		log_warning "尝试第 $i 次获取分支数据..."
+    for ((i = 1; i <= retries; i++)); do
+        log_warning "尝试第 $i 次获取分支数据..."
 
-		# 使用 curl 获取 JSON 并使用 jq 解析
-		sha=$(curl -s -H "Accept: application/vnd.github.v3+json" $API_URL | jq -r --arg branch "$BRANCH_NAME" '.[] | select(.name == $branch) | .commit.sha')
+        # 使用 curl 获取 JSON 并使用 jq 解析
+        sha=$(curl -s -H "Accept: application/vnd.github.v3+json" $API_URL | jq -r --arg branch "$BRANCH_NAME" '.[] | select(.name == $branch) | .commit.sha')
 
-		# 检查是否获取到了数据
-		if [[ -n $sha ]]; then
-			# 获取短格式的 sha (前7位)
-			short_sha=$(echo $sha | cut -c 1-7)
+        # 检查是否获取到了数据
+        if [[ -n $sha ]]; then
+            # 获取短格式的 sha (前7位)
+            short_sha=$(echo $sha | cut -c 1-7)
 
-			# 替换 PKG_SOURCE_VERSION 和 PKG_BUILD_VERSION 中的内容
-			sed -i "s/PKG_SOURCE_VERSION:=.*/PKG_SOURCE_VERSION:=$sha/" $mihomo_config
-			sed -i "s/PKG_BUILD_VERSION:=$lower_branch-.*/PKG_BUILD_VERSION:=$lower_branch-$short_sha/" $mihomo_config
+            # 替换 PKG_SOURCE_VERSION 和 PKG_BUILD_VERSION 中的内容
+            sed -i "s/PKG_SOURCE_VERSION:=.*/PKG_SOURCE_VERSION:=$sha/" $mihomo_config
+            sed -i "s/PKG_BUILD_VERSION:=$lower_branch-.*/PKG_BUILD_VERSION:=$lower_branch-$short_sha/" $mihomo_config
 
-			# 移除 PKG_MIRROR_HASH 行
-			sed -i "s/PKG_MIRROR_HASH:=.*/PKG_MIRROR_HASH:=skip/" $mihomo_config
+            # 移除 PKG_MIRROR_HASH 行
+            sed -i "s/PKG_MIRROR_HASH:=.*/PKG_MIRROR_HASH:=skip/" $mihomo_config
 
-			log_success "成功更新配置文件: $mihomo_config"
-			break
-		else
-			# 如果没有获取到 sha，可能是因为 API 达到了限制
-			remaining_rate_limit=$(curl -s -I $API_URL | grep -FiX "X-RateLimit-Remaining" | awk '{print $2}' | tr -d '\r')
+            log_success "成功更新配置文件: $mihomo_config"
+            break
+        else
+            # 如果没有获取到 sha，可能是因为 API 达到了限制
+            remaining_rate_limit=$(curl -s -I $API_URL | grep -FiX "X-RateLimit-Remaining" | awk '{print $2}' | tr -d '\r')
 
-			if [[ $remaining_rate_limit == "0" ]]; then
-				log_error "API 请求达到限制，等待 $retry_interval 秒后重试..."
-				sleep $retry_interval
-			else
-				log_error "获取分支数据失败，请检查 API 请求或网络连接。"
-				exit 1
-			fi
-		fi
-	done
-	set -x
+            if [[ $remaining_rate_limit == "0" ]]; then
+                log_error "API 请求达到限制，等待 $retry_interval 秒后重试..."
+                sleep $retry_interval
+            else
+                log_error "获取分支数据失败，请检查 API 请求或网络连接。"
+                exit 1
+            fi
+        fi
+    done
+    set -x
 }
 
 # Add a feed source
@@ -431,8 +448,8 @@ cp -rf luci-app-wolplus/ package/luci-app-wolplus/
 
 log_warning "当前运行目录为 $(pwd)"
 
-if [ ! -e .config ]; then
-	wget https://github.com/kiddin9/Kwrt/raw/master/devices/mediatek_filogic/.config -O .config
+if [[ ! -e .config ]]; then
+    wget https://github.com/kiddin9/Kwrt/raw/master/devices/mediatek_filogic/.config -O .config
 fi
 
 apply_patch autotimeset.diff
