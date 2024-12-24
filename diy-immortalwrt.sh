@@ -221,9 +221,10 @@ fetch_mihomo_branch_data() {
 
 ./scripts/feeds update -a
 ./scripts/feeds install -a
-./scripts/feeds install -a
 
 sed -i "s/\blibpcre\b/libpcre2/" package/feeds/telephony/freeswitch/Makefile
+
+./scripts/feeds install -a
 
 # 修改时区 UTF-8
 log_success "修改时区"
@@ -278,11 +279,20 @@ sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' feeds/luci/collections/luci/M
 
 find ./feeds -type f -regex ".*/root/etc/uci-defaults/.*theme.*" | xargs sed -i 's@luci.main.mediaurlbase=/luci-static/.*@luci.main.mediaurlbase=/luci-static/argon@g'
 
-find . -type f -regex ".*bg1.jpg" -exec cp -f bg1.jpg {} \;
 
 # Themes
-git_clone_or_pull https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon master
+git_clone_or_pull https://github.com/sirpdboy/luci-theme-kucat.git luci-theme-kucat js
+git_clone_or_pull https://github.com/jerrykuku/luci-theme-argon luci-theme-argon master
 # git_clone_or_pull https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config master
+
+delete_directory package/luci-theme-kucat
+delete_directory package/luci-theme-argon
+
+cp -rf luci-theme-kucat package/luci-theme-kucat
+cp -rf luci-theme-argon package/luci-theme-argon
+
+# Replace bg file
+find ./package/ -type f -regex ".*bg1.jpg$" -exec cp -f bg1.jpg {} \;
 
 log_success "设置mosdns"
 # 移除官方golang防止mosdns编译爆炸
@@ -347,7 +357,7 @@ git_clone_or_pull https://github.com/sirpdboy/luci-app-eqosplus.git package/luci
 
 # advancedplus
 log_success "设置advancedplus"
-git_clone_or_pull https://github.com/sirpdboy/luci-theme-kucat.git package/luci-theme-kucat js
+# 注意，需要kucat主题
 git_clone_or_pull https://github.com/sirpdboy/luci-app-advancedplus.git package/luci-app-advancedplus
 
 # sed -i "/zsh/d" package/luci-app-advancedplus/root/etc/init.d/advancedplus
@@ -375,6 +385,12 @@ log_success "设置miniupnp"
 git_clone_or_pull https://github.com/kiddin9/kwrt-packages.git kwrt-packages
 delete_directory feeds/packages/net/miniupnpd/
 cp -rf kwrt-packages/miniupnpd/ feeds/packages/net/miniupnpd/
+
+# wolplus
+log_success "设置wolplus"
+git_clone_or_pull https://github.com/animegasan/luci-app-wolplus.git luci-app-wolplus
+delete_directory packages/luci-app-wolplus/
+cp -rf luci-app-wolplus/ package/luci-app-wolplus/
 
 # 设置密码为空（安装固件时无需密码登陆，然后自己修改想要的密码）
 # sed -i 's@.*CYXluq4wUazHjmCDBCqXF*@#&@g' package/lean/default-settings/files/zzz-default-settings
