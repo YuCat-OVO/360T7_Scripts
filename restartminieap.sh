@@ -19,14 +19,14 @@ if [ -s /usr/sbin/mwan3 ]; then
             fi
         done
         ping_count=0
-        if [ ${ping_err} -eq 0 ]; then
+        if [ "${ping_err}" -eq 0 ]; then
             for i in $(mwan3 interfaces | grep "is offline" | awk '{print $2}'); do
-                interface=$(uci get network.${i}.device)
-                netconfig=$(uci show network | grep ${interface} | grep -v -e "@")
+                interface=$(uci get network."${i}".device)
+                netconfig=$(uci show network | grep "${interface}" | grep -v -e "@")
                 if [ -n "${netconfig}" ]; then
                     for j in $(echo "${netconfig}" | awk -F'.' '{print $2}'); do
-                        /sbin/ifdown ${j}
-                        /sbin/ifup ${j}
+                        /sbin/ifdown "${j}"
+                        /sbin/ifup "${j}"
                     done
                 fi
             done
