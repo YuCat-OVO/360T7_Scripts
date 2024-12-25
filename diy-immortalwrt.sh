@@ -306,7 +306,7 @@ cp -rf luci-theme-kucat package/luci-theme-kucat
 cp -rf luci-theme-argon package/luci-theme-argon
 
 # Replace bg file
-find ./package/ -type f -regex ".*bg1.jpg$" -exec cp -f bg1.jpg {} \;
+find ./package/ ./feeds/ -type f -regex ".*bg1.jpg$" -exec cp -f bg1.jpg {} \;
 
 log_success "设置mosdns"
 # 移除官方golang防止mosdns编译爆炸
