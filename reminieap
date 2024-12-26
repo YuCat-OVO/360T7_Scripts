@@ -89,7 +89,9 @@ while [ "$#" -gt 0 ]; do
     esac
 done
 rotate_logs() {
-    if [ -f "${LOG_FILE_PATH}" ] && [ "$(ls -l "${LOG_FILE_PATH}" | awk '{print $5}')" -ge "${LOG_ROTATE_SIZE}" ]; then
+    # trunk-ignore(shellcheck/SC2012)
+    log_file_size="$(ls -l "${LOG_FILE_PATH}" | awk '{print $5}')"
+    if [ -f "${LOG_FILE_PATH}" ] && [ "${log_file_size}" -ge "${LOG_ROTATE_SIZE}" ]; then
         tail -n 1000 "${LOG_FILE_PATH}" >"${LOG_FILE_PATH}.tmp" && mv "${LOG_FILE_PATH}.tmp" "${LOG_FILE_PATH}"
         log_message info "Log file rotated. Retained the last 1000 lines of the log."
     fi
