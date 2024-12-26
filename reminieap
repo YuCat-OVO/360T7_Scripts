@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Default ping hosts
-PRIMARY_PING_HOST="114.114.114.114" # Default primary ping target
+PRIMARY_PING_HOST="114.114.115.115" # Default primary ping target
 SECONDARY_PING_HOST="223.5.5.5"     # Default secondary ping target
 
 # Logging configurations
@@ -19,7 +19,7 @@ show_help() {
     cat <<EOF
 Usage: $0 [options]
 Options:
-  -p, --primary-host <IP>          Set the primary ping host (default: 114.114.114.114)
+  -p, --primary-host <IP>          Set the primary ping host (default: 114.114.115.115)
   -s, --secondary-host <IP>        Set the secondary ping host (default: 223.5.5.5)
   -t, --timeout <seconds>          Set ping timeout in seconds (default: 2)
   -a, --ping-attempts <count>      Set number of ping attempts (default: 5)
