@@ -5,11 +5,11 @@ if [ -s /usr/sbin/mwan3 ]; then
         ping_addr_1=114.114.114.114
         ping_addr_2=223.5.5.5
         while [ "${ping_count}" -lt 5 ]; do
-            if /bin/ping -c 1 "${ping_addr_1}" >/dev/null; then
+            if /bin/ping -c 1 "${ping_addr_1}" >/dev/null 2>&1; then
                 ping_err=0
                 break
             else
-                if /bin/ping -c 1 "${ping_addr_2}" >/dev/null; then
+                if /bin/ping -c 1 "${ping_addr_2}" >/dev/null 2>&1; then
                     ping_err=0
                     break
                 else
