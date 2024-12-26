@@ -233,9 +233,6 @@ fetch_mihomo_branch_data() {
 
 ./scripts/feeds update -a
 ./scripts/feeds install -a
-
-sed -i "s/\blibpcre\b/libpcre2/" feeds/telephony/freeswitch/Makefile
-
 ./scripts/feeds install -a
 
 # 修改时区 UTF-8
@@ -301,11 +298,11 @@ git_clone_or_pull https://github.com/jerrykuku/luci-theme-argon luci-theme-argon
 
 delete_directory package/luci-theme-kucat
 delete_directory package/luci-theme-argon
-delete_directory feeds/luci/luci-theme-argon
+delete_directory feeds/luci/themes/luci-theme-argon
 
 cp -rf luci-theme-kucat package/luci-theme-kucat
 cp -rf luci-theme-argon package/luci-theme-argon
-cp -rf luci-theme-argon feeds/luci/luci-theme-argon
+cp -rf luci-theme-argon feeds/luci/themes/luci-theme-argon
 
 # Replace bg file
 find ./package/ ./feeds/ -type f -regex ".*bg1.jpg$" -exec cp -f bg1.jpg {} \;
