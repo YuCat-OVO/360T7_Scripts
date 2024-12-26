@@ -234,7 +234,7 @@ fetch_mihomo_branch_data() {
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-sed -i "s/\blibpcre\b/libpcre2/" package/feeds/telephony/freeswitch/Makefile
+sed -i "s/\blibpcre\b/libpcre2/" feeds/telephony/freeswitch/Makefile
 
 ./scripts/feeds install -a
 
@@ -286,8 +286,8 @@ chmod +x package/base-files/files/bin/reminieap
 
 # 移除主题重复软件包
 log_success "设置argon主题"
-find ./ | grep Makefile | grep package/feeds/luci/luci-theme-argon | xargs rm -f || true
-find ./ | grep Makefile | grep package/feeds/luci/luci-app-argon-config | xargs rm -f || true
+find ./ | grep Makefile | grep feeds/luci/luci-theme-argon | xargs rm -f || true
+find ./ | grep Makefile | grep feeds/luci/luci-app-argon-config | xargs rm -f || true
 
 # 修改 argon 为默认主题,可根据你喜欢的修改成其他的（不选择那些会自动改变为默认主题的主题才有效果）
 sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' feeds/luci/collections/luci/Makefile
@@ -301,9 +301,11 @@ git_clone_or_pull https://github.com/jerrykuku/luci-theme-argon luci-theme-argon
 
 delete_directory package/luci-theme-kucat
 delete_directory package/luci-theme-argon
+delete_directory feeds/luci/luci-theme-argon
 
 cp -rf luci-theme-kucat package/luci-theme-kucat
 cp -rf luci-theme-argon package/luci-theme-argon
+cp -rf luci-theme-argon feeds/luci/luci-theme-argon
 
 # Replace bg file
 find ./package/ ./feeds/ -type f -regex ".*bg1.jpg$" -exec cp -f bg1.jpg {} \;
