@@ -281,8 +281,8 @@ check_content_in_file "net.core.default_qdisc = cake" package/base-files/files/e
 check_content_in_file "net.ipv4.tcp_congestion_control = bbr" package/base-files/files/etc/sysctl.d/99-custom.conf
 
 log_success "设置minieap重启脚本"
-cp -rf restartminieap.sh package/base-files/files/bin/restartminieap
-chmod +x package/base-files/files/bin/restartminieap
+cp -rf reminieap package/base-files/files/bin/reminieap
+chmod +x package/base-files/files/bin/reminieap
 
 # 移除主题重复软件包
 log_success "设置argon主题"

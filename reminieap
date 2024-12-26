@@ -1,0 +1,176 @@
+#!/bin/sh
+
+# Default ping hosts
+PRIMARY_PING_HOST="114.114.114.114" # Default primary ping target
+SECONDARY_PING_HOST="223.5.5.5"     # Default secondary ping target
+
+# Logging configurations
+ENABLE_CONSOLE_LOG="${ENABLE_CONSOLE_LOG:-true}"  # Whether to log directly to console (default: true)
+ENABLE_FILE_LOG="${ENABLE_FILE_LOG:-false}"       # Whether to log to a file (default: false)
+LOG_FILE_PATH="/var/log/reminieap.log"            # File path for file logging
+ENABLE_SYSLOG="${ENABLE_SYSLOG:-false}"           # Whether to log to syslog (default: false)
+LOG_LEVEL="${LOG_LEVEL:-info}"                    # Log level: debug, info, warning, error (default: info)
+LOG_ROTATE_SIZE=1048576                           # Maximum log file size in bytes (default: 1MB)
+PING_TIMEOUT_SECONDS="${PING_TIMEOUT_SECONDS:-2}" # Ping timeout duration in seconds (default: 2)
+PING_ATTEMPTS="${PING_ATTEMPTS:-5}"               # Number of ping attempts before declaring failure (default: 5)
+
+# Display help function
+show_help() {
+    cat <<EOF
+Usage: $0 [options]
+Options:
+  -p, --primary-host <IP>          Set the primary ping host (default: 114.114.114.114)
+  -s, --secondary-host <IP>        Set the secondary ping host (default: 223.5.5.5)
+  -t, --timeout <seconds>          Set ping timeout in seconds (default: 2)
+  -a, --ping-attempts <count>      Set number of ping attempts (default: 5)
+  -c, --console-log <true|false>   Enable or disable direct console logging (default: true)
+  -f, --file-log <true|false>      Enable or disable logging to a file (default: false)
+  -y, --syslog <true|false>        Enable or disable logging to syslog (default: false)
+  -l, --log-level <level>          Set log level: debug, info, warning, error (default: info)
+  -r, --log-rotate-size <bytes>    Set maximum log file size before rotation (default: 1048576)
+  -h, --help                       Display this help message
+EOF
+    exit 0
+}
+
+# Parse arguments
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+    -p | --primary-host)
+        PRIMARY_PING_HOST="$2"
+        shift 2
+        ;; # Set primary ping host
+    -s | --secondary-host)
+        SECONDARY_PING_HOST="$2"
+        shift 2
+        ;; # Set secondary ping host
+    -t | --timeout)
+        PING_TIMEOUT_SECONDS="$2"
+        shift 2
+        ;; # Set ping timeout in seconds
+    -a | --ping-attempts)
+        PING_ATTEMPTS="$2"
+        shift 2
+        ;; # Set number of ping attempts
+    -c | --console-log)
+        ENABLE_CONSOLE_LOG="$2"
+        shift 2
+        ;; # Enable or disable console logging
+    -f | --file-log)
+        ENABLE_FILE_LOG="$2"
+        shift 2
+        ;; # Enable or disable file logging
+    -y | --syslog)
+        ENABLE_SYSLOG="$2"
+        shift 2
+        ;; # Enable or disable syslog logging
+    -l | --log-level)
+        LOG_LEVEL="$2"
+        shift 2
+        ;; # Set log level
+    -r | --log-rotate-size)
+        LOG_ROTATE_SIZE="$2"
+        shift 2
+        ;; # Set log rotation size
+    -h | --help)
+        show_help
+        ;; # Show help and exit
+    --)
+        shift
+        break
+        ;;
+    -*)
+        echo "Invalid option: $1" >&2
+        exit 1
+        ;;
+    *)
+        break
+        ;;
+    esac
+done
+rotate_logs() {
+    if [ -f "${LOG_FILE_PATH}" ] && [ "$(ls -l "${LOG_FILE_PATH}" | awk '{print $5}')" -ge "${LOG_ROTATE_SIZE}" ]; then
+        tail -n 1000 "${LOG_FILE_PATH}" >"${LOG_FILE_PATH}.tmp" && mv "${LOG_FILE_PATH}.tmp" "${LOG_FILE_PATH}"
+        log_message info "Log file rotated. Retained the last 1000 lines of the log."
+    fi
+}
+
+log_message() {
+    level="$1"
+    shift
+    message="$(date): [${level}] $*"
+
+    case "${LOG_LEVEL}" in
+    debug) ;; # All levels are logged
+    info)
+        [ "${level}" = "debug" ] && return
+        ;;
+    warning)
+        [ "${level}" = "debug" ] || [ "${level}" = "info" ] && return
+        ;;
+    error)
+        [ "${level}" != "error" ] && return
+        ;;
+    *) ;;
+    esac
+
+    if [ "${ENABLE_SYSLOG}" = "true" ]; then
+        logger -t reminieap "${message}"
+    fi
+    if [ "${ENABLE_FILE_LOG}" = "true" ]; then
+        rotate_logs
+        if ! echo "${message}" >>"${LOG_FILE_PATH}"; then
+            echo "Failed to write to log file: ${LOG_FILE_PATH}" >&2
+        fi
+    fi
+    if [ "${ENABLE_CONSOLE_LOG}" = "true" ]; then
+        echo "${message}"
+    fi
+}
+
+# Check if mwan3 exists (POSIX-compliant)
+type mwan3 >/dev/null 2>&1 && [ -x /usr/sbin/mwan3 ] && {
+    while true; do
+        ping_attempts=0
+        ping_failed=1
+        while [ "${ping_attempts}" -lt "${PING_ATTEMPTS}" ]; do
+            log_message debug "Starting ping attempt $((ping_attempts + 1))..."
+            if /bin/ping -c 1 -W "${PING_TIMEOUT_SECONDS}" "${PRIMARY_PING_HOST}" >/dev/null 2>&1; then
+                ping_failed=0
+                log_message debug "Ping successful to ${PRIMARY_PING_HOST}."
+                break
+            elif /bin/ping -c 1 -W "${PING_TIMEOUT_SECONDS}" "${SECONDARY_PING_HOST}" >/dev/null 2>&1; then
+                ping_failed=0
+                log_message debug "Ping successful to ${SECONDARY_PING_HOST}."
+                break
+            else
+                ping_attempts=$((ping_attempts + 1))
+                log_message warning "Ping attempt ${ping_attempts} failed to ${PRIMARY_PING_HOST} and ${SECONDARY_PING_HOST}."
+            fi
+        done
+
+        if [ "${ping_failed}" -eq 0 ]; then
+            log_message debug "Checking offline interfaces."
+            offline_interfaces=$(mwan3 interfaces | grep "is offline")
+            if [ -z "${offline_interfaces}" ]; then
+                log_message debug "No offline interfaces found."
+            else
+                echo "${offline_interfaces}" | awk '{print $2}' | while read -r interface; do
+                    iface_name=$(uci get network."$(echo "${interface}" | sed 's/[^a-zA-Z0-9_-]//g')" 2>/dev/null || true)
+                    net_config=$(uci show network | grep "${iface_name}" | grep -v -e "@")
+                    if [ -n "${net_config}" ]; then
+                        echo "${net_config}" | awk -F'.' '{print $2}' | while read -r network; do
+                            /sbin/ifdown "${network}"
+                            log_message info "Brought down interface ${network}."
+                            /sbin/ifup "${network}"
+                            log_message info "Brought up interface ${network}."
+                        done
+                    fi
+                done
+            fi
+        else
+            log_message error "All ping attempts failed; no action taken."
+        fi
+        sleep 60
+    done
+}
