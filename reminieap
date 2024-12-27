@@ -158,7 +158,7 @@ type mwan3 >/dev/null 2>&1 && [ -x /usr/sbin/mwan3 ] && {
                 log_message debug "No offline interfaces found."
             else
                 echo "${offline_interfaces}" | awk '{print $2}' | while read -r interface; do
-                    iface_name=$(uci get network."$(echo "${interface}" | sed 's/[^a-zA-Z0-9_-]//g')" 2>/dev/null || true)
+                    iface_name=$(uci get network."$(echo "${interface}" | sed 's/[^a-zA-Z0-9_-]//g').device" 2>/dev/null || true)
                     net_config=$(uci show network | grep "${iface_name}" | grep -v -e "@")
                     if [ -n "${net_config}" ]; then
                         echo "${net_config}" | awk -F'.' '{print $2}' | while read -r network; do
