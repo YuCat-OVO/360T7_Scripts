@@ -286,11 +286,6 @@ log_success "设置argon主题"
 find ./ | grep Makefile | grep feeds/luci/luci-theme-argon | xargs rm -f || true
 find ./ | grep Makefile | grep feeds/luci/luci-app-argon-config | xargs rm -f || true
 
-# 修改 argon 为默认主题,可根据你喜欢的修改成其他的（不选择那些会自动改变为默认主题的主题才有效果）
-sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' feeds/luci/collections/luci/Makefile
-
-find ./feeds -type f -regex ".*/root/etc/uci-defaults/.*theme.*" -exec sed -i 's@luci.main.mediaurlbase=/luci-static/.*@luci.main.mediaurlbase=/luci-static/argon@g' {} \;
-
 # Themes
 git_clone_or_pull https://github.com/sirpdboy/luci-theme-kucat.git luci-theme-kucat js
 git_clone_or_pull https://github.com/jerrykuku/luci-theme-argon luci-theme-argon master
@@ -303,6 +298,10 @@ delete_directory feeds/luci/themes/luci-theme-argon
 cp -rf luci-theme-kucat package/luci-theme-kucat
 cp -rf luci-theme-argon package/luci-theme-argon
 cp -rf luci-theme-argon feeds/luci/themes/luci-theme-argon
+
+# 修改 argon 为默认主题,可根据你喜欢的修改成其他的（不选择那些会自动改变为默认主题的主题才有效果）
+sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' feeds/luci/collections/luci/Makefile
+find ./feeds -type f -regex ".*/root/etc/uci-defaults/.*theme.*" -exec sed -i 's@luci.main.mediaurlbase=/luci-static/.*@luci.main.mediaurlbase=/luci-static/argon@g' {} \;
 
 # Replace bg file
 find ./package/ ./feeds/ -type f -regex ".*bg1.jpg$" -exec cp -f bg1.jpg {} \;
@@ -378,16 +377,6 @@ git_clone_or_pull https://github.com/sirpdboy/luci-app-advancedplus.git package/
 # autotimeset
 log_success "设置autotimeset"
 git_clone_or_pull https://github.com/sirpdboy/luci-app-autotimeset package/luci-app-autotimeset
-
-# turboacc
-
-# find ./ | grep Makefile | grep package/network/utils/fullconenat-nft/ | xargs rm -f
-
-# wget https://raw.githubusercontent.com/chenmozhijin/turboacc/luci/add_turboacc.sh -O add_turboacc.sh
-# sed -i "s@fullcone-nat-nftables/nft-fullcone@padavanonly/nft-fullcone@g" add_turboacc.sh
-
-# chmod +x add_turboacc.sh
-# ./add_turboacc.sh --no-sfe
 
 # MentoHUST
 log_success "设置MentoHUST"
