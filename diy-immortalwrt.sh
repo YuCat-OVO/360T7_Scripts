@@ -354,29 +354,37 @@ find ./ | grep "Makefile" | grep "feeds/packages/.*/ua2f" | xargs rm -f || true
 git_clone_or_pull https://github.com/Zxilly/UA2F package/UA2F
 
 git_clone_or_pull https://github.com/lucikap/luci-app-ua2f.git luci-app-ua2f
-delete_directory package/luci-app-ua2f/
-cp -rf luci-app-ua2f/luci-app-ua2f/ package/luci-app-ua2f/
 delete_directory luci-app-ua2f
+cp -rf luci-app-ua2f/luci-app-ua2f/ package/luci-app-ua2f/
 
 # tailscale
 log_success "设置tailscale"
 sed -i '/\/etc\/init\.d\/tailscale/d;/\/etc\/config\/tailscale/d;' feeds/packages/net/tailscale/Makefile
-git_clone_or_pull https://github.com/asvow/luci-app-tailscale.git package/luci-app-tailscale
+git_clone_or_pull https://github.com/asvow/luci-app-tailscale.git luci-app-tailscale
+delete_directory package/luci-app-tailscale
+cp -rf luci-app-tailscale package/luci-app-tailscale
 
 # eqosplus
 log_success "设置eqosplus"
 git_clone_or_pull https://github.com/sirpdboy/luci-app-eqosplus.git package/luci-app-eqosplus
+delete_directory package/luci-app-eqosplus
+cp -rf luci-app-eqosplus package/luci-app-eqosplus
 
 # advancedplus
 log_success "设置advancedplus"
 # 注意，需要kucat主题
 git_clone_or_pull https://github.com/sirpdboy/luci-app-advancedplus.git package/luci-app-advancedplus
+delete_directory package/luci-app-advancedplus
+cp -rf luci-app-advancedplus package/luci-app-advancedplus
+
 
 # sed -i "/zsh/d" package/luci-app-advancedplus/root/etc/init.d/advancedplus
 
 # autotimeset
 log_success "设置autotimeset"
 git_clone_or_pull https://github.com/sirpdboy/luci-app-autotimeset package/luci-app-autotimeset
+delete_directory package/luci-app-autotimeset
+cp -rf luci-app-autotimeset package/luci-app-autotimeset
 
 # MentoHUST
 log_success "设置MentoHUST"
