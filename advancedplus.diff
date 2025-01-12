@@ -1,5 +1,5 @@
 diff --git a/package/luci-app-advancedplus/luasrc/model/cbi/advancedplus/design-config.lua b/package/luci-app-advancedplus/luasrc/model/cbi/advancedplus/design-config.lua
-index 8ce99fa..cdea503 100644
+index 8ce99fae..cdea503f 100644
 --- a/package/luci-app-advancedplus/luasrc/model/cbi/advancedplus/design-config.lua
 +++ b/package/luci-app-advancedplus/luasrc/model/cbi/advancedplus/design-config.lua
 @@ -32,6 +32,7 @@ o.rmempty = false
@@ -20,7 +20,7 @@ index 8ce99fa..cdea503 100644
  o = s:option(Button, 'save', translate('Save Changes'))
  o.inputstyle = 'reload'
 diff --git a/package/luci-app-advancedplus/luasrc/model/cbi/advancedplus/kucatset.lua b/package/luci-app-advancedplus/luasrc/model/cbi/advancedplus/kucatset.lua
-index 9867619..636d1f7 100644
+index 98676194..636d1f73 100644
 --- a/package/luci-app-advancedplus/luasrc/model/cbi/advancedplus/kucatset.lua
 +++ b/package/luci-app-advancedplus/luasrc/model/cbi/advancedplus/kucatset.lua
 @@ -87,10 +87,11 @@ e:value('bypass', translate('bypass'))
@@ -37,21 +37,21 @@ index 9867619..636d1f7 100644
  
  e = t:option(Flag, "fontmode", translate("Care mode (large font)"))
 diff --git a/package/luci-app-advancedplus/po/zh-cn/advancedplus.po b/package/luci-app-advancedplus/po/zh-cn/advancedplus.po
-index 49d9aeb..42723ef 100644
+index 49d9aebb..56dcbcc2 100644
 --- a/package/luci-app-advancedplus/po/zh-cn/advancedplus.po
 +++ b/package/luci-app-advancedplus/po/zh-cn/advancedplus.po
-@@ -358,6 +358,9 @@ msgstr "默认显示导航栏"
- msgid "Navigation bar proxy"
- msgstr "导航栏代理"
+@@ -361,6 +361,9 @@ msgstr "导航栏代理"
+ msgid "OpenClash by default"
+ msgstr "默认 OpenClash"
  
 +msgid "Mihomo by default"
 +msgstr "默认 Mihomo"
 +
- msgid "OpenClash by default"
- msgstr "默认 OpenClash"
+ msgid "The starting number symbol (#) or each line of the semicolon (;) is considered a comment; Remove (;) and enable the specified option."
+ msgstr "开头的数字符号（＃）或分号的每一行（;）被视为注释；删除（;）启用指定选项。"
  
 diff --git a/package/luci-app-advancedplus/po/zh_Hans/advancedplus.po b/package/luci-app-advancedplus/po/zh_Hans/advancedplus.po
-index 49d9aeb..42723ef 100644
+index 49d9aebb..42723eff 100644
 --- a/package/luci-app-advancedplus/po/zh_Hans/advancedplus.po
 +++ b/package/luci-app-advancedplus/po/zh_Hans/advancedplus.po
 @@ -358,6 +358,9 @@ msgstr "默认显示导航栏"
@@ -65,7 +65,7 @@ index 49d9aeb..42723ef 100644
  msgstr "默认 OpenClash"
  
 diff --git a/package/luci-app-advancedplus/root/etc/config/advancedplus b/package/luci-app-advancedplus/root/etc/config/advancedplus
-index 295aaf6..a00ad1c 100644
+index 295aaf64..a00ad1c2 100644
 --- a/package/luci-app-advancedplus/root/etc/config/advancedplus
 +++ b/package/luci-app-advancedplus/root/etc/config/advancedplus
 @@ -1,6 +1,6 @@
@@ -77,7 +77,7 @@ index 295aaf6..a00ad1c 100644
  	option gohome 'overview'
  	option fontmode '0'
 diff --git a/package/luci-app-advancedplus/root/etc/config/design b/package/luci-app-advancedplus/root/etc/config/design
-index faa6535..083bf1b 100644
+index faa65357..083bf1b1 100644
 --- a/package/luci-app-advancedplus/root/etc/config/design
 +++ b/package/luci-app-advancedplus/root/etc/config/design
 @@ -1,4 +1,4 @@
@@ -89,7 +89,7 @@ index faa6535..083bf1b 100644
 +	option navbar_proxy 'mihomo'
 \ No newline at end of file
 diff --git a/package/luci-app-advancedplus/root/etc/init.d/advancedplus b/package/luci-app-advancedplus/root/etc/init.d/advancedplus
-index e117202..2dcbf5a 100644
+index aaeeff9a..49aec0dd 100644
 --- a/package/luci-app-advancedplus/root/etc/init.d/advancedplus
 +++ b/package/luci-app-advancedplus/root/etc/init.d/advancedplus
 @@ -14,7 +14,7 @@ rm -rf /etc/config/advancedplus
@@ -101,13 +101,14 @@ index e117202..2dcbf5a 100644
  	option gouser 'advancedplus'
  	option gohome 'overview'
  	option fontmode '0'
-@@ -232,9 +232,6 @@ tsoset
-         $ipt -t mangle -A POSTROUTING -o ${dev} -j TTL --ttl-set 64
+@@ -233,8 +233,8 @@ tsoset
      fi
      #cpumode=`uci -q get advancedplus.@basic[0].cpumode`
--    #[ ! $cpumode ] || cpumodeset $cpumode   /usr/bin/zsh
+     #[ ! $cpumode ] || cpumodeset $cpumode   /usr/bin/zsh
 -    sed -i "\/bin\/zsh/d" /etc/profile
 -    [ "x$(uci -q get advancedplus.@basic[0].usshmenu)" = "x1" ] || echo '/usr/bin/zsh'  >> /etc/profile
++    # sed -i "\/bin\/zsh/d" /etc/profile
++    # [ "x$(uci -q get advancedplus.@basic[0].usshmenu)" = "x1" ] || echo '/usr/bin/zsh'  >> /etc/profile
      uci commit netwizard 
  }
  

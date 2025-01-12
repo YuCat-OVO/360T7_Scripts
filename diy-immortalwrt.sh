@@ -366,14 +366,14 @@ cp -rf luci-app-tailscale package/luci-app-tailscale
 
 # eqosplus
 log_success "设置eqosplus"
-git_clone_or_pull https://github.com/sirpdboy/luci-app-eqosplus.git package/luci-app-eqosplus
+git_clone_or_pull https://github.com/sirpdboy/luci-app-eqosplus.git luci-app-eqosplus
 delete_directory package/luci-app-eqosplus
 cp -rf luci-app-eqosplus package/luci-app-eqosplus
 
 # advancedplus
 log_success "设置advancedplus"
 # 注意，需要kucat主题
-git_clone_or_pull https://github.com/sirpdboy/luci-app-advancedplus.git package/luci-app-advancedplus
+git_clone_or_pull https://github.com/sirpdboy/luci-app-advancedplus.git luci-app-advancedplus
 delete_directory package/luci-app-advancedplus
 cp -rf luci-app-advancedplus package/luci-app-advancedplus
 
@@ -382,7 +382,7 @@ cp -rf luci-app-advancedplus package/luci-app-advancedplus
 
 # autotimeset
 log_success "设置autotimeset"
-git_clone_or_pull https://github.com/sirpdboy/luci-app-autotimeset package/luci-app-autotimeset
+git_clone_or_pull https://github.com/sirpdboy/luci-app-autotimeset luci-app-autotimeset
 delete_directory package/luci-app-autotimeset
 cp -rf luci-app-autotimeset package/luci-app-autotimeset
 
