@@ -445,7 +445,8 @@ cp -rf luci-app-wolplus/ package/luci-app-wolplus/
 log_warning "当前运行目录为 $(pwd)" || true
 
 if [[ ! -e .config ]]; then
-    wget https://github.com/kiddin9/Kwrt/raw/master/devices/mediatek_filogic/.config -O .config
+    # wget https://github.com/kiddin9/Kwrt/raw/master/devices/mediatek_filogic/.config -O .config
+    wget https://github.com/YuCat-OVO/360T7_Scripts/raw/main/.config -O .config
 fi
 
 apply_patch autotimeset.diff
