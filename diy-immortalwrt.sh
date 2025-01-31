@@ -287,15 +287,12 @@ find ./ | grep Makefile | grep feeds/luci/luci-theme-argon | xargs rm -f || true
 find ./ | grep Makefile | grep feeds/luci/luci-app-argon-config | xargs rm -f || true
 
 # Themes
-git_clone_or_pull https://github.com/sirpdboy/luci-theme-kucat.git luci-theme-kucat js
 git_clone_or_pull https://github.com/jerrykuku/luci-theme-argon luci-theme-argon master
 # git_clone_or_pull https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config master
 
-delete_directory package/luci-theme-kucat
 delete_directory package/luci-theme-argon
 delete_directory feeds/luci/themes/luci-theme-argon
 
-cp -rf luci-theme-kucat package/luci-theme-kucat
 cp -rf luci-theme-argon package/luci-theme-argon
 cp -rf luci-theme-argon feeds/luci/themes/luci-theme-argon
 
@@ -370,16 +367,6 @@ git_clone_or_pull https://github.com/sirpdboy/luci-app-eqosplus.git luci-app-eqo
 delete_directory package/luci-app-eqosplus
 cp -rf luci-app-eqosplus package/luci-app-eqosplus
 
-# advancedplus
-log_success "设置advancedplus"
-# 注意，需要kucat主题
-git_clone_or_pull https://github.com/sirpdboy/luci-app-advancedplus.git luci-app-advancedplus
-delete_directory package/luci-app-advancedplus
-cp -rf luci-app-advancedplus package/luci-app-advancedplus
-
-
-# sed -i "/zsh/d" package/luci-app-advancedplus/root/etc/init.d/advancedplus
-
 # autotimeset
 log_success "设置autotimeset"
 git_clone_or_pull https://github.com/sirpdboy/luci-app-autotimeset luci-app-autotimeset
@@ -452,7 +439,6 @@ fi
 apply_patch autotimeset.diff
 apply_patch minieap.diff
 apply_patch eqosplus.diff
-apply_patch advancedplus.diff
 apply_patch geodata.diff
 
 # wget https://github.com/kiddin9/Kwrt/raw/master/devices/mediatek_filogic/patches/01-360t7.patch -O 01-360t7.patch
