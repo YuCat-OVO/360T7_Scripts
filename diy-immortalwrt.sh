@@ -335,13 +335,13 @@ sed -i '/PKG_VERSION:=/s/-//g' package/v2ray-geodata/Makefile
 
 # mihomo
 log_success "设置mihomo"
-git_clone_or_pull https://github.com/morytyann/OpenWrt-mihomo OpenWrt-mihomo main
+git_clone_or_pull https://github.com/nikkinikki-org/OpenWrt-nikki OpenWrt-nikki main
 
-delete_directory package/mihomo/
-cp -rf OpenWrt-mihomo/mihomo/ package/mihomo/
+delete_directory package/nikki/
+cp -rf OpenWrt-nikki/nikki/ package/nikki/
 
-delete_directory package/luci-app-mihomo/
-cp -rf OpenWrt-mihomo/luci-app-mihomo/ package/luci-app-mihomo/
+delete_directory package/luci-app-nikki/
+cp -rf OpenWrt-nikki/luci-app-nikki/ package/luci-app-nikki/
 
 fetch_mihomo_branch_data
 
