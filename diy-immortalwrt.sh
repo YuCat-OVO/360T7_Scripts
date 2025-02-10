@@ -181,7 +181,7 @@ fetch_mihomo_branch_data() {
     set +x
     local API_URL="https://api.github.com/repos/MetaCubeX/mihomo/branches"
     local BRANCH_NAME="Alpha"
-    local mihomo_config="package/mihomo/Makefile" # 需要替换的文件名
+    local mihomo_config="package/nikki/Makefile"  # 需要替换的文件名
     local retries=3                               # 最大重试次数
     local retry_interval=60                       # 每次重试的等待时间 (秒)
 
