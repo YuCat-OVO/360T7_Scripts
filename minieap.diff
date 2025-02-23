@@ -1,5 +1,3 @@
-diff --git a/feeds/luci/applications/luci-app-minieap/luasrc/model/cbi/minieap/general.lua b/feeds/luci/applications/luci-app-minieap/luasrc/model/cbi/minieap/general.lua
-index 2695e93..76ffa15 100644
 --- a/feeds/luci/applications/luci-app-minieap/luasrc/model/cbi/minieap/general.lua
 +++ b/feeds/luci/applications/luci-app-minieap/luasrc/model/cbi/minieap/general.lua
 @@ -170,6 +170,9 @@ rj_option = o:taboption("ruijie", DynamicList, "rj_option", translate("Custom EA

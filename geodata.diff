@@ -1,5 +1,3 @@
-diff --git a/package/luci-app-mosdns/root/usr/share/mosdns/mosdns.sh b/package/luci-app-mosdns/root/usr/share/mosdns/mosdns.sh
-index b0534da..e8e5dec 100755
 --- a/package/luci-app-mosdns/root/usr/share/mosdns/mosdns.sh
 +++ b/package/luci-app-mosdns/root/usr/share/mosdns/mosdns.sh
 @@ -106,7 +106,7 @@ geodat_update() (
@@ -12,9 +10,6 @@ index b0534da..e8e5dec 100755
      curl --connect-timeout 5 -m 120 --ipv4 -kfSLo "$TMPDIR/geoip.dat" ""$mirror"https://github.com/Loyalsoldier/geoip/releases/latest/download/"$geoip_type".dat"
      [ $? -ne 0 ] && rm -rf "$TMPDIR" && exit 1
 
-
-diff --git a/package/v2ray-geodata/Makefile b/package/v2ray-geodata/Makefile
-index ae728c2..2919672 100644
 --- a/package/v2ray-geodata/Makefile
 +++ b/package/v2ray-geodata/Makefile
 @@ -37,7 +37,7 @@ define Package/v2ray-geosite
