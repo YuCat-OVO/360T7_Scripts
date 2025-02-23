@@ -392,6 +392,12 @@ git_clone_or_pull https://github.com/animegasan/luci-app-wolplus.git luci-app-wo
 delete_directory package/luci-app-wolplus/
 cp -rf luci-app-wolplus/ package/luci-app-wolplus/
 
+# MiniEAP
+log_success "设置minieap"
+# 移除 PKG_HASH 行
+sed -i "s/PKG_HASH:=.*/PKG_HASH:=skip/" feeds/packages/net/minieap/Makefile
+sed -i "s#PKG_SOURCE_URL:=.*#PKG_SOURCE_URL:=https://codeload.github.com/chenjunyu19/minieap/tar.gz/dev#" feeds/packages/net/minieap/Makefile
+
 # 设置密码为空（安装固件时无需密码登陆，然后自己修改想要的密码）
 # sed -i 's@.*CYXluq4wUazHjmCDBCqXF*@#&@g' package/lean/default-settings/files/zzz-default-settings
 
