@@ -310,7 +310,7 @@ log_success "设置mosdns"
 # 移除官方golang防止mosdns编译爆炸
 delete_directory feeds/packages/lang/golang
 # git_clone_or_pull https://github.com/sbwml/packages_lang_golang feeds/packages/lang/golang 23.x
-git_clone_or_pull https://github.com/sbwml/packages_lang_golang packages_lang_golang 23.x
+git_clone_or_pull https://github.com/sbwml/packages_lang_golang packages_lang_golang 24.x
 cp -rf packages_lang_golang/ feeds/packages/lang/golang/
 
 # 移除mosdns重复软件包防止mosdns编译爆炸
