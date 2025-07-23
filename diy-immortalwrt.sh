@@ -348,14 +348,14 @@ cp -rf OpenWrt-nikki/luci-app-nikki/ package/luci-app-nikki/
 
 fetch_mihomo_branch_data
 
-# UA2F
-log_success "设置UA2F"
-find ./ | grep "Makefile" | grep "feeds/packages/.*/ua2f" | xargs rm -f || true
-git_clone_or_pull https://github.com/Zxilly/UA2F package/UA2F
+# # UA2F
+# log_success "设置UA2F"
+# find ./ | grep "Makefile" | grep "feeds/packages/.*/ua2f" | xargs rm -f || true
+# git_clone_or_pull https://github.com/Zxilly/UA2F package/UA2F
 
-git_clone_or_pull https://github.com/lucikap/luci-app-ua2f.git luci-app-ua2f
-delete_directory luci-app-ua2f
-cp -rf luci-app-ua2f/luci-app-ua2f/ package/luci-app-ua2f/
+# git_clone_or_pull https://github.com/lucikap/luci-app-ua2f.git luci-app-ua2f
+# delete_directory luci-app-ua2f
+# cp -rf luci-app-ua2f/luci-app-ua2f/ package/luci-app-ua2f/
 
 # tailscale
 log_success "设置tailscale"
@@ -376,9 +376,9 @@ git_clone_or_pull https://github.com/sirpdboy/luci-app-autotimeset luci-app-auto
 delete_directory package/luci-app-autotimeset
 cp -rf luci-app-autotimeset package/luci-app-autotimeset
 
-# MentoHUST
-log_success "设置MentoHUST"
-sed -i "s/PKG_MIRROR_HASH:=.*/PKG_MIRROR_HASH:=skip/" feeds/packages/net/mentohust/Makefile
+# # MentoHUST
+# log_success "设置MentoHUST"
+# sed -i "s/PKG_MIRROR_HASH:=.*/PKG_MIRROR_HASH:=skip/" feeds/packages/net/mentohust/Makefile
 
 # miniupnp
 log_success "设置miniupnp"
@@ -392,11 +392,17 @@ git_clone_or_pull https://github.com/animegasan/luci-app-wolplus.git luci-app-wo
 delete_directory package/luci-app-wolplus/
 cp -rf luci-app-wolplus/ package/luci-app-wolplus/
 
-# MiniEAP
-log_success "设置minieap"
-# 移除 PKG_HASH 行
-sed -i "s/PKG_HASH:=.*/PKG_HASH:=skip/" feeds/packages/net/minieap/Makefile
-sed -i "s#PKG_SOURCE_URL:=.*#PKG_SOURCE_URL:=https://codeload.github.com/chenjunyu19/minieap/tar.gz/dev#" feeds/packages/net/minieap/Makefile
+# # MiniEAP
+# log_success "设置minieap"
+# # 移除 PKG_HASH 行
+# sed -i "s/PKG_HASH:=.*/PKG_HASH:=skip/" feeds/packages/net/minieap/Makefile
+# sed -i "s#PKG_SOURCE_URL:=.*#PKG_SOURCE_URL:=https://codeload.github.com/chenjunyu19/minieap/tar.gz/dev#" feeds/packages/net/minieap/Makefile
+
+# lucky
+log_success "设置lucky"
+git_clone_or_pull https://github.com/gdy666/luci-app-lucky.git luci-app-lucky
+delete_directory package/luci-app-lucky/
+cp -rf luci-app-lucky/ package/luci-app-lucky/
 
 # 设置密码为空（安装固件时无需密码登陆，然后自己修改想要的密码）
 # sed -i 's@.*CYXluq4wUazHjmCDBCqXF*@#&@g' package/lean/default-settings/files/zzz-default-settings
